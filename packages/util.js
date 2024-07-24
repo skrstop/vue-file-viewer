@@ -73,7 +73,6 @@ export function fileDownload(file, name) {
     if (!file) {
         throw new Error('文件不能为空')
     }
-    console.log(name)
     // file是url
     if (file.indexOf('http') > -1) {
         // name = name ? name : getUrlFileName(file)
