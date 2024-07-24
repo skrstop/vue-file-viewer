@@ -7,6 +7,7 @@
  */
 import { atob } from './pollify'
 import renders from './renders'
+import FileSaver from 'file-saver'
 
 /**
  * 文件对象转文件流
@@ -52,14 +53,14 @@ export async function readText(buffer) {
  * @param {string} name 文件名
  */
 export function getExtend(name) {
-  let index = name.indexOf("?");
+  const index = name.indexOf('?')
   if (index === -1) {
     const dot = name.lastIndexOf('.')
     return name.substring(dot + 1)
   }
-  name = name.slice(0, index);
+  name = name.slice(0, index)
   const dot = name.lastIndexOf('.')
-  return name.substring(dot + 1);
+  return name.substring(dot + 1)
 }
 
 /**
@@ -71,17 +72,19 @@ export function fileDownload(file, name) {
   if (!file) {
     throw new Error('文件不能为空')
   }
-
   // file是url
   if (file.indexOf('http') > -1) {
-    name = name ? name : getUrlFileName(file)
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.href = file
-    link.target = '_blank'
-    link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
-    document.body.appendChild(link)
-    link.click()
+    // name = name ? name : getUrlFileName(file)
+    // const link = document.createElement('a')
+    // link.style.display = 'none'
+    // link.href = file
+    // link.target = '_blank'
+    // link.download = name
+    // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
+    // document.body.appendChild(link)
+    // link.click()
+    // return
+    FileSaver.saveAs(file, name)
     return
   }
 
@@ -98,14 +101,15 @@ export function fileDownload(file, name) {
   if (window.navigator.msSaveBlob) {
     window.navigator.msSaveOrOpenBlob(file, name)
   } else {
-    const url = window.URL.createObjectURL(new Blob([file]))
-    const link = document.createElement('a')
-    link.style.display = 'none'
-    link.href = url
-    link.target = '_blank'
-    link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
-    document.body.appendChild(link)
-    link.click()
+    // const url = window.URL.createObjectURL(new Blob([file]))
+    // const link = document.createElement('a')
+    // link.style.display = 'none'
+    // link.href = url
+    // link.target = '_blank'
+    // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
+    // document.body.appendChild(link)
+    // link.click()
+    FileSaver.saveAs(new Blob([file]), name)
   }
 }
 

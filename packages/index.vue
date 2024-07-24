@@ -111,16 +111,20 @@ export default {
   },
   mounted() {
     // 作为iframe使用时，允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
-    const {from, name, fileUrl, shoHead, useOfficeMicroOnline, disableScale, clientZoom} = parse(
+    const {from, name, fileUrl, shoHead, useOfficeMicroOnline, disableScale} = parse(
         location.search.substring(1)
     )
     // 是否禁用缩放和下载按钮
     if (disableScale !== undefined && disableScale != null) {
-      this.disableScale = Boolean(disableScale)
+      this.disableScale = ('true' === disableScale)
     }
-    // 初始化缩放比例
-    if (clientZoom !== undefined && clientZoom != null) {
-      this.clientZoom = Number(clientZoom)
+    if (name) {
+      if (name.indexOf('.') === -1 && fileUrl && typeof fileUrl === 'string') {
+        // 不带后缀名，默认去url中的文件后缀
+        this.uploadFileName = name + '.' + getExtend(fileUrl)
+      } else {
+        this.uploadFileName = name
+      }
     }
     if (from) {
       window.addEventListener('message', (event) => {
@@ -155,9 +159,9 @@ export default {
   },
   methods: {
     getFileName(url) {
-      let index = url.indexOf("?");
+      let index = url.indexOf('?')
       if (index > -1) {
-        url = url.slice(0, index);
+        url = url.slice(0, index)
       }
       return url.slice(url.lastIndexOf('/') + 1, url.length)
     },
@@ -182,7 +186,9 @@ export default {
       this.loading = true
       this.inputUrl = url
       // 要预览的文件地址
-      this.uploadFileName = this.getFileName(url)
+      if (!this.uploadFileName) {
+        this.uploadFileName = this.getFileName(url)
+      }
       // 取得扩展名并统一转小写兼容大写
       const extend = getExtend(this.uploadFileName).toLowerCase()
       // 判断是否为office文件
