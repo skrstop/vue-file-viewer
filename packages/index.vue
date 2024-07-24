@@ -116,6 +116,10 @@ export default {
     const {from, name, fileUrl, showHead, useOfficeMicroOnline, showDownload, disableScale} = parse(
         location.search.substring(1)
     )
+    // 是否显示头部
+    if (showHead !== undefined && showHead != null) {
+      this.hidden = ('true' === showHead)
+    }
     // 是否开启下载按钮
     if (showDownload !== undefined && showDownload != null) {
       this.showDownload = ('true' === showDownload)
