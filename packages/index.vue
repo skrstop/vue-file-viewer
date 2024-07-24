@@ -26,7 +26,7 @@
         </div>
       </div>
     </div>
-    <div v-show="!loading" class="ctrol_btn">
+    <div v-show="!loading && (showScale || showDownload)" class="ctrol_btn">
       <span v-if="showScale">
         <span class="scale_add" @click="scaleBtn('add')">➕</span>
         <span class="scale_reduce" @click="scaleBtn('reduce')">➖</span>
