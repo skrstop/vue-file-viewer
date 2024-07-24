@@ -26,12 +26,12 @@
         </div>
       </div>
     </div>
-    <div v-show="!loading && (showScale || showDownload)" class="ctrol_btn">
-      <span v-if="showScale">
+    <div v-show="!loading && ((showScale && !disableScale) || showDownload)" class="ctrol_btn">
+      <span v-if="showScale && !disableScale">
         <span class="scale_add" @click="scaleBtn('add')">＋</span>
         <span class="scale_reduce" @click="scaleBtn('reduce')">－</span>
       </span>
-      <span v-if="showScale && showDownload" style="padding-right:15px;color:gray">|</span>
+      <span v-if="(showScale && !disableScale) && showDownload" style="padding-right:15px;color:gray">|</span>
       <span
           v-if="showDownload"
           class="download ctrol_btn_download"
@@ -100,6 +100,7 @@ export default {
       loading: false,
       // 是否开启放大缩小按钮
       showScale: true,
+      disableScale: false,
       // 是否开启下载按钮
       showDownload: true,
       // 隐藏头部，当基于消息机制渲染，将隐藏
@@ -112,7 +113,7 @@ export default {
   },
   mounted() {
     // 作为iframe使用时，允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
-    const {from, name, fileUrl, showHead, useOfficeMicroOnline, showDownload, showScale} = parse(
+    const {from, name, fileUrl, showHead, useOfficeMicroOnline, showDownload, disableScale} = parse(
         location.search.substring(1)
     )
     // 是否开启下载按钮
@@ -120,8 +121,8 @@ export default {
       this.showDownload = ('true' === showDownload)
     }
     // 是否开启缩放按钮
-    if (showScale !== undefined && showScale != null) {
-      this.showScale = ('true' === showScale)
+    if (disableScale !== undefined && disableScale != null) {
+      this.disableScale = ('true' === disableScale)
     }
     if (name) {
       if (name.indexOf('.') === -1 && fileUrl && typeof fileUrl === 'string') {
