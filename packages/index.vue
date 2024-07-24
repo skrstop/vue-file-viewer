@@ -3,38 +3,38 @@
     <div class="banner" v-if="shoHead || !hidden">
       <div class="file-select">
         <button
-          type="button"
-          style="margin-right: 20px"
-          @click.stop="isUrl = !isUrl"
+            type="button"
+            style="margin-right: 20px"
+            @click.stop="isUrl = !isUrl"
         >
           【点击切换】{{ isUrl ? '上传预览' : '输入网址' }}
         </button>
         <div class="overlay">
           <span v-if="isUrl" style="white-space: pre;">
             <input
-              type="text"
-              v-model="inputUrl"
-              placeholder="请输入浏览文件地址"
+                type="text"
+                v-model="inputUrl"
+                placeholder="请输入浏览文件地址"
             />
             <button type="button" @click.stop="loadFromUrl(inputUrl, true)">
               预览
             </button>
           </span>
           <span v-else>
-            <input type="file" @change="handleChange" />
+            <input type="file" @change="handleChange"/>
           </span>
         </div>
       </div>
     </div>
-    <div v-show="!loading && showScale" class="ctrol_btn">
+    <div v-show="!loading && showScale && !disableScale" class="ctrol_btn">
       <span>
         <span class="scale_add" @click="scaleBtn('add')">➕</span>
         <span class="scale_reduce" @click="scaleBtn('reduce')">➖</span>
       </span>
       <span style="padding-right:15px;color:gray">|</span>
       <span
-        class="download"
-        @click="fileDownload(inputUrl || iframeFile, uploadFileName)"
+          class="download"
+          @click="fileDownload(inputUrl || iframeFile, uploadFileName)"
       >
         下载
       </span>
@@ -42,11 +42,11 @@
     <div style="height: 100%;width: 100%;">
       <div v-show="loading" class="loading">正在加载中，请耐心等待...</div>
       <div
-        v-show="!loading"
-        ref="output"
-        class="output"
-        style="height: 100%;width: 100%;overflow: auto;transform-origin: top left;"
-        :style="{
+          v-show="!loading"
+          ref="output"
+          class="output"
+          style="height: 100%;width: 100%;overflow: auto;transform-origin: top left;"
+          :style="{
           transform: `scale(${clientZoom})`,
           height: (1 / clientZoom) * 100 + '%',
           width: (1 / clientZoom) * 100 + '%'
@@ -57,10 +57,9 @@
 </template>
 
 <script>
-import { getExtend, readBuffer, render, fileDownload } from './util'
-import { typeInfo } from './renders'
-import renders from './renders'
-import { parse } from 'qs'
+import {fileDownload, getExtend, readBuffer, render} from './util'
+import renders, {typeInfo} from './renders'
+import {parse} from 'qs'
 import axios from 'axios'
 
 /**
@@ -100,6 +99,7 @@ export default {
       // 加载状态跟踪
       loading: false,
       // 是否开启放大缩小按钮
+      disableScale: false,
       showScale: false,
       // 隐藏头部，当基于消息机制渲染，将隐藏
       hidden: false,
@@ -111,12 +111,20 @@ export default {
   },
   mounted() {
     // 作为iframe使用时，允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
-    const { from, name, fileUrl, shoHead, useOfficeMicroOnline } = parse(
-      location.search.substring(1)
+    const {from, name, fileUrl, shoHead, useOfficeMicroOnline, disableScale, clientZoom} = parse(
+        location.search.substring(1)
     )
+    // 是否禁用缩放和下载按钮
+    if (disableScale !== undefined && disableScale != null) {
+      this.disableScale = Boolean(disableScale)
+    }
+    // 初始化缩放比例
+    if (clientZoom !== undefined && clientZoom != null) {
+      this.clientZoom = Number(clientZoom)
+    }
     if (from) {
       window.addEventListener('message', (event) => {
-        const { origin, data: blob } = event
+        const {origin, data: blob} = event
         if (origin === from && blob instanceof Blob) {
           // 构造响应，自动渲染
           const file = new File([blob], name, {})
@@ -133,12 +141,12 @@ export default {
     // 作为组件使用时，允许接收不同格式的文件数据（链接 or file）
     if (this.fileUrl) {
       typeof this.fileUrl === 'string'
-        ? this.loadFromUrl(
-            this.fileUrl,
-            this.shoHead,
-            this.useOfficeMicroOnline
+          ? this.loadFromUrl(
+              this.fileUrl,
+              this.shoHead,
+              this.useOfficeMicroOnline
           )
-        : this.loadFromBlob(this.fileUrl)
+          : this.loadFromBlob(this.fileUrl)
     }
     // 窗体大小改变时自动计算缩放比例
     window.onload = window.onresize = () => {
@@ -146,6 +154,13 @@ export default {
     }
   },
   methods: {
+    getFileName(url) {
+      let index = url.indexOf("?");
+      if (index > -1) {
+        url = url.slice(0, index);
+      }
+      return url.slice(url.lastIndexOf('/') + 1, url.length)
+    },
     fileDownload,
     // 设置缩放比例
     scaleBtn(type) {
@@ -167,7 +182,7 @@ export default {
       this.loading = true
       this.inputUrl = url
       // 要预览的文件地址
-      this.uploadFileName = url.substr(url.lastIndexOf('/') + 1)
+      this.uploadFileName = this.getFileName(url)
       // 取得扩展名并统一转小写兼容大写
       const extend = getExtend(this.uploadFileName).toLowerCase()
       // 判断是否为office文件
@@ -176,10 +191,10 @@ export default {
       if (useOfficeMicroOnline && isOffice) {
         // 展示微软第三方office在线浏览
         renders['officeOnline'](
-          url,
-          this.$refs.output,
-          'officeOnline',
-          this.uploadFileName
+            url,
+            this.$refs.output,
+            'officeOnline',
+            this.uploadFileName
         ).finally(() => {
           this.loading = false
         })
@@ -192,28 +207,28 @@ export default {
         method: 'get',
         responseType: 'blob'
       })
-        .then(({ data }) => {
-          const file = new File([data], this.uploadFileName, {})
-          this.handleChange({ target: { files: [file] } })
-        })
-        .finally(() => {
-          this.loading = false
-        })
-        .catch(() => {
-          console.error('文件下载失败')
-          // 展示文件不存在
-          renders['notFind'](
-            url,
-            this.$refs.output,
-            extend,
-            this.uploadFileName
-          )
-        })
+          .then(({data}) => {
+            const file = new File([data], this.uploadFileName, {})
+            this.handleChange({target: {files: [file]}})
+          })
+          .finally(() => {
+            this.loading = false
+          })
+          .catch(() => {
+            console.error('文件下载失败')
+            // 展示文件不存在
+            renders['notFind'](
+                url,
+                this.$refs.output,
+                extend,
+                this.uploadFileName
+            )
+          })
     },
     // 从file文件流加载
     loadFromBlob(file) {
       this.hidden = true //隐藏头部
-      this.handleChange({ target: { files: [file] } })
+      this.handleChange({target: {files: [file]}})
     },
     // 监听上传事件获取文件信息，并处理文件
     async handleChange(e) {
@@ -232,14 +247,14 @@ export default {
     // 文件信息处理，对应文件渲染方法
     displayResult(buffer, file) {
       // 取得文件名
-      const { name } = file
+      const {name} = file
       this.uploadFileName = name
       // 取得扩展名并统一转小写兼容大写
       const extend = getExtend(name).toLowerCase()
       // 媒体和图片类型/不支持的类型不显示缩放按钮
       if (
-        [...typeInfo.image, ...typeInfo.video].includes(extend) ||
-        !renders[extend]
+          [...typeInfo.image, ...typeInfo.video].includes(extend) ||
+          !renders[extend]
       ) {
         this.showScale = false
       } else {
@@ -253,15 +268,15 @@ export default {
       const child = this.$refs.output.appendChild(node)
       // 调用对应渲染方法进行渲染
       return new Promise((resolve, reject) =>
-        render(buffer, child, extend, name)
-          .then(() => {
-            // 渲染结束调整缩放比例
-            this.$nextTick(() => {
-              this.bodyScale()
-            })
-            resolve()
-          })
-          .catch(reject)
+          render(buffer, child, extend, name)
+              .then(() => {
+                // 渲染结束调整缩放比例
+                this.$nextTick(() => {
+                  this.bodyScale()
+                })
+                resolve()
+              })
+              .catch(reject)
       )
     }
   }

@@ -52,8 +52,14 @@ export async function readText(buffer) {
  * @param {string} name 文件名
  */
 export function getExtend(name) {
+  let index = name.indexOf("?");
+  if (index === -1) {
+    const dot = name.lastIndexOf('.')
+    return name.substring(dot + 1)
+  }
+  name = name.slice(0, index);
   const dot = name.lastIndexOf('.')
-  return name.substring(dot + 1)
+  return name.substring(dot + 1);
 }
 
 /**
