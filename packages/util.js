@@ -5,21 +5,22 @@
  * @LastEditTime: 2023-01-13 11:59:23
  * @Descripttion:
  */
-import { atob } from './pollify'
+import {atob} from './pollify'
 import renders from './renders'
 import FileSaver from 'file-saver'
+import axios from 'axios'
 
 /**
  * 文件对象转文件流
  * @param {object} file 文件对象
  */
 export async function readBuffer(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (loadEvent) => resolve(loadEvent.target.result)
-    reader.onerror = (e) => reject(e)
-    reader.readAsArrayBuffer(file)
-  })
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (loadEvent) => resolve(loadEvent.target.result)
+        reader.onerror = (e) => reject(e)
+        reader.readAsArrayBuffer(file)
+    })
 }
 
 /**
@@ -27,12 +28,12 @@ export async function readBuffer(file) {
  * @param {object} buffer 文件流
  */
 export async function readDataURL(buffer) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (loadEvent) => resolve(loadEvent.target.result)
-    reader.onerror = (e) => reject(e)
-    reader.readAsDataURL(new Blob([buffer]))
-  })
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (loadEvent) => resolve(loadEvent.target.result)
+        reader.onerror = (e) => reject(e)
+        reader.readAsDataURL(new Blob([buffer]))
+    })
 }
 
 /**
@@ -40,12 +41,12 @@ export async function readDataURL(buffer) {
  * @param {object} buffer 文件流
  */
 export async function readText(buffer) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = (loadEvent) => resolve(loadEvent.target.result)
-    reader.onerror = (e) => reject(e)
-    reader.readAsText(new Blob([buffer]), 'utf-8')
-  })
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (loadEvent) => resolve(loadEvent.target.result)
+        reader.onerror = (e) => reject(e)
+        reader.readAsText(new Blob([buffer]), 'utf-8')
+    })
 }
 
 /**
@@ -53,14 +54,14 @@ export async function readText(buffer) {
  * @param {string} name 文件名
  */
 export function getExtend(name) {
-  const index = name.indexOf('?')
-  if (index === -1) {
+    const index = name.indexOf('?')
+    if (index === -1) {
+        const dot = name.lastIndexOf('.')
+        return name.substring(dot + 1)
+    }
+    name = name.slice(0, index)
     const dot = name.lastIndexOf('.')
     return name.substring(dot + 1)
-  }
-  name = name.slice(0, index)
-  const dot = name.lastIndexOf('.')
-  return name.substring(dot + 1)
 }
 
 /**
@@ -69,48 +70,61 @@ export function getExtend(name) {
  * @param {string} name 文件名称，需要带后缀如：abc.jpg（为url可不传入，会自动获取文件名）
  */
 export function fileDownload(file, name) {
-  if (!file) {
-    throw new Error('文件不能为空')
-  }
-  // file是url
-  if (file.indexOf('http') > -1) {
-    // name = name ? name : getUrlFileName(file)
-    // const link = document.createElement('a')
-    // link.style.display = 'none'
-    // link.href = file
-    // link.target = '_blank'
-    // link.download = name
-    // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
-    // document.body.appendChild(link)
-    // link.click()
-    // return
-    FileSaver.saveAs(file, name)
-    return
-  }
+    if (!file) {
+        throw new Error('文件不能为空')
+    }
+    console.log(name)
+    // file是url
+    if (file.indexOf('http') > -1) {
+        // name = name ? name : getUrlFileName(file)
+        // const link = document.createElement('a')
+        // link.style.display = 'none'
+        // link.href = file
+        // link.target = '_blank'
+        // link.download = name
+        // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
+        // document.body.appendChild(link)
+        // link.click()
+        // return
+        // 直接下载无法指定文件名
+        // FileSaver.saveAs(file, name)
+        axios
+            .get(file, {responseType: 'blob'})
+            .then((res) => {
+                return res.data
+            })
+            .then((blob) => {
+                FileSaver.saveAs(blob, name)
+            })
+            .catch((err) => {
+                console.error('Error:', err)
+            })
+        return
+    }
 
-  if (!name) {
-    throw new Error('文件名不能为空')
-  }
+    if (!name) {
+        throw new Error('文件名不能为空')
+    }
 
-  // file是base64先转blob
-  if (typeof file === 'string') {
-    file = base64toBlob(file)
-  }
+    // file是base64先转blob
+    if (typeof file === 'string') {
+        file = base64toBlob(file)
+    }
 
-  // file是blob
-  if (window.navigator.msSaveBlob) {
-    window.navigator.msSaveOrOpenBlob(file, name)
-  } else {
-    // const url = window.URL.createObjectURL(new Blob([file]))
-    // const link = document.createElement('a')
-    // link.style.display = 'none'
-    // link.href = url
-    // link.target = '_blank'
-    // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
-    // document.body.appendChild(link)
-    // link.click()
-    FileSaver.saveAs(new Blob([file]), name)
-  }
+    // file是blob
+    if (window.navigator.msSaveBlob) {
+        window.navigator.msSaveOrOpenBlob(file, name)
+    } else {
+        // const url = window.URL.createObjectURL(new Blob([file]))
+        // const link = document.createElement('a')
+        // link.style.display = 'none'
+        // link.href = url
+        // link.target = '_blank'
+        // link.setAttribute('download', name) // 自定义下载文件名（如exemple.txt）
+        // document.body.appendChild(link)
+        // link.click()
+        FileSaver.saveAs(new Blob([file]), name)
+    }
 }
 
 /**
@@ -118,17 +132,17 @@ export function fileDownload(file, name) {
  * @param {string} base64String Blob格式数据
  */
 export function base64toBlob(base64String) {
-  var arr = base64String.split(','),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n)
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n)
-  }
-  return new Blob([u8arr], {
-    type: mime
-  })
+    var arr = base64String.split(','),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n)
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n)
+    }
+    return new Blob([u8arr], {
+        type: mime
+    })
 }
 
 /**
@@ -136,11 +150,10 @@ export function base64toBlob(base64String) {
  * @param {string} url 文件地址
  */
 export function getUrlFileName(url) {
-  if (!url) return ''
-  const file = url.split('/')
-  return file[file.length - 1] || ''
+    if (!url) return ''
+    const file = url.split('/')
+    return file[file.length - 1] || ''
 }
-
 
 
 /**
@@ -151,9 +164,9 @@ export function getUrlFileName(url) {
  * @param {buffer} name 文件名称
  **/
 export async function render(buffer, target, type, name) {
-  const handler = renders[type]
-  if (handler) {
-    return handler(...arguments)
-  }
-  return renders.error(...arguments)
+    const handler = renders[type]
+    if (handler) {
+        return handler(...arguments)
+    }
+    return renders.error(...arguments)
 }
