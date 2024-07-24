@@ -83,7 +83,7 @@
     justify-content: center;
     align-items: center;
     padding: 6px 15px;
-    border-radius: 10px;
+    border-radius: 6px;
     //background-color: rgba(0, 0, 0, 0.3);
     background-color: deepskyblue;
     color: white;
@@ -92,6 +92,13 @@
 
   .ctrol_btn > span {
     cursor: pointer;
+  }
+
+  .ctrol_btn_download{
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .ctrol_btn_download:hover {
