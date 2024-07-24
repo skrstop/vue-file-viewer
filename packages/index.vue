@@ -104,6 +104,7 @@ export default {
       // 是否开启下载按钮
       showDownload: true,
       // 隐藏头部，当基于消息机制渲染，将隐藏
+      disableHead: false,
       hidden: false,
       // 安全宽度（低于此内容无法展示全）
       safeWith: 1400,
@@ -113,12 +114,15 @@ export default {
   },
   mounted() {
     // 作为iframe使用时，允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
-    const {from, name, fileUrl, showHead, useOfficeMicroOnline, showDownload, disableScale} = parse(
+    const {from, name, fileUrl, useOfficeMicroOnline, showDownload, disableScale, disableHead} = parse(
         location.search.substring(1)
     )
     // 是否显示头部
-    if (showHead !== undefined && showHead != null) {
-      this.hidden = ('true' === showHead)
+    if (disableHead !== undefined && disableHead != null) {
+      this.disableHead = ('true' === disableHead)
+      if (this.disableHead){
+        this.hidden = true
+      }
     }
     // 是否开启下载按钮
     if (showDownload !== undefined && showDownload != null) {
@@ -127,6 +131,10 @@ export default {
     // 是否开启缩放按钮
     if (disableScale !== undefined && disableScale != null) {
       this.disableScale = ('true' === disableScale)
+    }
+    if (!fileUrl){
+      this.showDownload = false
+      this.disableScale = true
     }
     if (name) {
       if (name.indexOf('.') === -1 && fileUrl && typeof fileUrl === 'string') {
@@ -150,7 +158,7 @@ export default {
     // 作为iframe使用时，允许通过链接传参获取文件链接数据
     if (fileUrl) {
       this.iframeFile = fileUrl
-      this.loadFromUrl(fileUrl, Boolean(showHead), Boolean(useOfficeMicroOnline))
+      this.loadFromUrl(fileUrl, ('false' === disableHead), ('true' === useOfficeMicroOnline))
     }
     // 作为组件使用时，允许接收不同格式的文件数据（链接 or file）
     if (this.fileUrl) {
@@ -191,8 +199,11 @@ export default {
     loadFromUrl(url, showHead = false, useOfficeMicroOnline = false) {
       // 校验链接是否合法
       if (!url) return
-
-      this.hidden = !showHead //隐藏头部
+      if (this.disableHead){
+        this.hidden = true
+      } else {
+        this.hidden = !showHead //隐藏头部
+      }
       this.loading = true
       this.inputUrl = url
       // 要预览的文件地址
