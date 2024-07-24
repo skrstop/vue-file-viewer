@@ -1,6 +1,6 @@
 <template>
   <div class="vue-file-viewer" id="vue-file-viewer">
-    <div class="banner" v-if="shoHead || !hidden">
+    <div class="banner" v-if="showHead || !hidden">
       <div class="file-select">
         <button
             type="button"
@@ -26,16 +26,16 @@
         </div>
       </div>
     </div>
-    <div v-show="!loading && showScale && !disableScale" class="ctrol_btn">
-      <span>
+    <div v-show="!loading" class="ctrol_btn">
+      <span v-if="showScale">
         <span class="scale_add" @click="scaleBtn('add')">➕</span>
         <span class="scale_reduce" @click="scaleBtn('reduce')">➖</span>
       </span>
-      <span style="padding-right:15px;color:gray">|</span>
+      <span v-if="showScale && showDownload" style="padding-right:15px;color:gray">|</span>
       <span
+          v-if="showDownload"
           class="download"
-          @click="fileDownload(inputUrl || iframeFile, uploadFileName)"
-      >
+          @click="fileDownload(inputUrl || iframeFile, uploadFileName)">
         下载
       </span>
     </div>
@@ -76,7 +76,7 @@ export default {
       default: ''
     },
     // 是否显示头部
-    shoHead: {
+    showHead: {
       type: Boolean,
       default: false
     },
@@ -99,8 +99,9 @@ export default {
       // 加载状态跟踪
       loading: false,
       // 是否开启放大缩小按钮
-      disableScale: false,
-      showScale: false,
+      showScale: true,
+      // 是否开启下载按钮
+      showDownload: true,
       // 隐藏头部，当基于消息机制渲染，将隐藏
       hidden: false,
       // 安全宽度（低于此内容无法展示全）
@@ -111,12 +112,16 @@ export default {
   },
   mounted() {
     // 作为iframe使用时，允许使用预留的消息机制发送二进制数据，必须在url后添加?name=xxx.xxx&from=xxx
-    const {from, name, fileUrl, shoHead, useOfficeMicroOnline, disableScale} = parse(
+    const {from, name, fileUrl, showHead, useOfficeMicroOnline, showDownload, showScale} = parse(
         location.search.substring(1)
     )
-    // 是否禁用缩放和下载按钮
-    if (disableScale !== undefined && disableScale != null) {
-      this.disableScale = ('true' === disableScale)
+    // 是否开启下载按钮
+    if (showDownload !== undefined && showDownload != null) {
+      this.showDownload = ('true' === showDownload)
+    }
+    // 是否开启缩放按钮
+    if (showScale !== undefined && showScale != null) {
+      this.showScale = ('true' === showScale)
     }
     if (name) {
       if (name.indexOf('.') === -1 && fileUrl && typeof fileUrl === 'string') {
@@ -140,14 +145,14 @@ export default {
     // 作为iframe使用时，允许通过链接传参获取文件链接数据
     if (fileUrl) {
       this.iframeFile = fileUrl
-      this.loadFromUrl(fileUrl, Boolean(shoHead), Boolean(useOfficeMicroOnline))
+      this.loadFromUrl(fileUrl, Boolean(showHead), Boolean(useOfficeMicroOnline))
     }
     // 作为组件使用时，允许接收不同格式的文件数据（链接 or file）
     if (this.fileUrl) {
       typeof this.fileUrl === 'string'
           ? this.loadFromUrl(
               this.fileUrl,
-              this.shoHead,
+              this.showHead,
               this.useOfficeMicroOnline
           )
           : this.loadFromBlob(this.fileUrl)
@@ -178,11 +183,11 @@ export default {
       this.clientZoom = scale
     },
     // 从url加载
-    loadFromUrl(url, shoHead = false, useOfficeMicroOnline = false) {
+    loadFromUrl(url, showHead = false, useOfficeMicroOnline = false) {
       // 校验链接是否合法
       if (!url) return
 
-      this.hidden = !shoHead //隐藏头部
+      this.hidden = !showHead //隐藏头部
       this.loading = true
       this.inputUrl = url
       // 要预览的文件地址
