@@ -28,13 +28,13 @@
     </div>
     <div v-show="!loading && (showScale || showDownload)" class="ctrol_btn">
       <span v-if="showScale">
-        <span class="scale_add" @click="scaleBtn('add')">➕</span>
-        <span class="scale_reduce" @click="scaleBtn('reduce')">➖</span>
+        <span class="scale_add" @click="scaleBtn('add')">＋</span>
+        <span class="scale_reduce" @click="scaleBtn('reduce')">－</span>
       </span>
       <span v-if="showScale && showDownload" style="padding-right:15px;color:gray">|</span>
       <span
           v-if="showDownload"
-          class="download"
+          class="download ctrol_btn_download"
           @click="fileDownload(inputUrl || iframeFile, uploadFileName)">
         下载
       </span>

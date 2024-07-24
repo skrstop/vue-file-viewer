@@ -84,7 +84,8 @@
     align-items: center;
     padding: 6px 15px;
     border-radius: 10px;
-    background-color: rgba(0, 0, 0, 0.3);
+    //background-color: rgba(0, 0, 0, 0.3);
+    background-color: deepskyblue;
     color: white;
     font-size: 1.2rem;
   }
@@ -93,9 +94,24 @@
     cursor: pointer;
   }
 
-  .scale_add,
+  .ctrol_btn_download:hover {
+    color: grey;
+  }
+
   .scale_reduce {
     margin-right: 15px;
+  }
+
+  .scale_add {
+    margin-right: 15px;
+  }
+
+  .scale_reduce:hover {
+    color: grey;
+  }
+
+  .scale_add:hover {
+    color: grey;
   }
 
   /deep/ .output > div {
