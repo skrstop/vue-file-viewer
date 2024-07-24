@@ -275,7 +275,9 @@ export default {
     displayResult(buffer, file) {
       // 取得文件名
       const {name} = file
-      this.uploadFileName = name
+      if (!this.uploadFileName){
+        this.uploadFileName = name
+      }
       // 取得扩展名并统一转小写兼容大写
       const extend = getExtend(name).toLowerCase()
       // 媒体和图片类型/不支持的类型不显示缩放按钮
